@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Producción</title>
+    <!-- Fuente Inter de Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Iconos Lucide -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- HEADER -->
+        <header class="header">
+            <button class="menu-btn" id="menuBtn">
+                <i data-lucide="menu"></i>
+            </button>
+            <div class="header-title">
+                <h1>PRODUCCIÓN DE PALETAS</h1>
+                <p>Dashboard en Tiempo Real</p>
+            </div>
+            <div class="notification-wrapper">
+                <button class="bell-btn" id="bellBtn">
+                    <i data-lucide="bell"></i>
+                </button>
+                <span class="notification-badge hidden" id="notificationBadge"></span>
+            </div>
+        </header>
+
+        <!-- PLANT STATUS -->
+        <div class="plant-status-bar">
+            <div class="plant-selector">
+                <div class="status-dot online"></div>
+                <span>PLANTA: LÍNEA 1</span>
+                <i data-lucide="chevron-down" class="icon-small"></i>
+            </div>
+            <div class="last-update">
+                <span>Última actualización: <span id="clock">--:--:--</span></span>
+                <span class="live-badge">EN VIVO</span>
+            </div>
+        </div>
+
+        <main class="main-content" id="mainContent">
+            <!-- METRICS CARDS -->
+            <section class="metrics-grid">
+                <!-- Paletas Hoy -->
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <i data-lucide="layers" class="metric-icon"></i>
+                        <span>PALETAS HOY</span>
+                    </div>
+                    <div class="metric-value">
+                        <span id="paletasHoy">0</span>
+                    </div>
+                    <div class="metric-sub">Objetivo: 1,350</div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" id="paletasHoyProgress" style="width: 0%"></div>
+                    </div>
+                    <div class="metric-percent" id="paletasHoyPercent">0%</div>
+                </div>
+
+                <!-- Paletas / Hora -->
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <i data-lucide="clock" class="metric-icon"></i>
+                        <span>PALETAS / HORA</span>
+                    </div>
+                    <div class="metric-value">
+                        <span id="paletasHora">0</span>
+                    </div>
+                    <div class="metric-sub">Promedio últimas 2h</div>
+                    <div class="metric-trend positive" id="paletasHoraTrend">+0.0%</div>
+                </div>
+
+                <!-- Sacos / Min (PRINCIPAL) -->
+                <div class="metric-card highlight-card" id="sacosMinCard">
+                    <div class="metric-header">
+                        <i data-lucide="package" class="metric-icon"></i>
+                        <span>SACOS / MIN</span>
+                    </div>
+                    <div class="metric-value">
+                        <span id="sacosMin">0.0</span>
+                    </div>
+                    <div class="metric-sub">Actual</div>
+                    <div class="metric-sub-highlight">Objetivo: 8.0</div>
+                </div>
+
+                <!-- OEE -->
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <i data-lucide="gauge" class="metric-icon"></i>
+                        <span>OEE</span>
+                    </div>
+                    <div class="metric-value">
+                        <span id="oeeValue">0%</span>
+                    </div>
+                    <div class="metric-sub">Eficiencia Global</div>
+                    <div class="metric-sub-highlight">Objetivo: 85%</div>
+                </div>
+            </section>
+
+            <!-- CHART SECTION -->
+            <section class="chart-section">
+                <div class="section-header">
+                    <h2>FLUJO DE PRODUCCIÓN (SACOS POR MINUTO)</h2>
+                    <select class="time-selector">
+                        <option>Últimas 2 horas</option>
+                    </select>
+                </div>
+                <div class="chart-container">
+                    <canvas id="productionChart"></canvas>
+                </div>
+                <div class="chart-legend">
+                    <div class="legend-item">
+                        <span class="legend-color legend-real"></span>
+                        <span>Producción real</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color legend-target"></span>
+                        <span>Objetivo (8.0 sacos/min)</span>
+                    </div>
+                </div>
+            </section>
+
+            <div class="dashboard-grid">
+                <!-- FALLAS -->
+                <section class="panel fallas-panel">
+                    <div class="section-header">
+                        <h2>FALLAS MÁS RECURRENTES</h2>
+                        <select class="time-selector">
+                            <option>Últimas 24h</option>
+                        </select>
+                    </div>
+                    <ul class="fallas-list">
+                        <li>
+                            <div class="falla-info">
+                                <span class="falla-rank">1</span>
+                                <span class="falla-name">Falla de Cosechadora</span>
+                                <span class="falla-time">3h 24m (35%)</span>
+                            </div>
+                            <div class="falla-bar-container">
+                                <div class="falla-bar" style="width: 35%; background: var(--color-red);"></div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="falla-info">
+                                <span class="falla-rank">2</span>
+                                <span class="falla-name">Atasco en Transportador</span>
+                                <span class="falla-time">1h 12m (18%)</span>
+                            </div>
+                            <div class="falla-bar-container">
+                                <div class="falla-bar" style="width: 18%; background: var(--color-orange);"></div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="falla-info">
+                                <span class="falla-rank">3</span>
+                                <span class="falla-name">Mantenimiento Preventivo</span>
+                                <span class="falla-time">0h 58m (12%)</span>
+                            </div>
+                            <div class="falla-bar-container">
+                                <div class="falla-bar" style="width: 12%; background: var(--color-blue);"></div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="falla-info">
+                                <span class="falla-rank">4</span>
+                                <span class="falla-name">Falla de Enfardadora</span>
+                                <span class="falla-time">0h 41m (9%)</span>
+                            </div>
+                            <div class="falla-bar-container">
+                                <div class="falla-bar" style="width: 9%; background: var(--color-purple);"></div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="falla-info">
+                                <span class="falla-rank">5</span>
+                                <span class="falla-name">Falta de Material</span>
+                                <span class="falla-time">0h 27m (6%)</span>
+                            </div>
+                            <div class="falla-bar-container">
+                                <div class="falla-bar" style="width: 6%; background: var(--color-green);"></div>
+                            </div>
+                        </li>
+                    </ul>
+                    <a href="#" class="interactive-link">VER TODAS LAS FALLAS ></a>
+                </section>
+
+                <!-- ESTADO DE LA LÍNEA -->
+                <section class="panel estado-panel">
+                    <h2>ESTADO ACTUAL DE LA LÍNEA</h2>
+                    <div class="doughnut-container">
+                        <div class="doughnut-chart-wrapper">
+                            <canvas id="statusChart"></canvas>
+                            <div class="doughnut-center-text">
+                                <span class="status-label">EN<br>OPERACIÓN</span>
+                                <span class="status-percent">82%</span>
+                            </div>
+                        </div>
+                        <ul class="status-legend">
+                            <li><span class="dot" style="background: var(--color-green);"></span> Operación <span class="percent">82%</span></li>
+                            <li><span class="dot" style="background: var(--color-orange);"></span> Parada <span class="percent">10%</span></li>
+                            <li><span class="dot" style="background: var(--color-red);"></span> Falla <span class="percent">6%</span></li>
+                            <li><span class="dot" style="background: var(--color-blue);"></span> Cambio/Setup <span class="percent">2%</span></li>
+                        </ul>
+                    </div>
+                </section>
+            </div>
+
+            <div class="bottom-panels-grid">
+                <!-- HISTORIAL PARADAS -->
+                <section class="panel historial-panel">
+                    <div class="section-header">
+                        <h2>HISTORIAL DE PARADAS (HOY)</h2>
+                        <a href="#" class="interactive-link">VER HISTORIAL COMPLETO ></a>
+                    </div>
+                    <div class="table-container">
+                        <table class="history-table">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>INICIO</th>
+                                    <th>FIN</th>
+                                    <th>DURACIÓN</th>
+                                    <th>MÁQUINA</th>
+                                    <th>MOTIVO</th>
+                                </tr>
+                            </thead>
+                            <tbody id="paradasTbody">
+                                <tr>
+                                    <td><span class="dot" style="background: var(--color-red);"></span></td>
+                                    <td>09:17</td>
+                                    <td>09:26</td>
+                                    <td>9 min</td>
+                                    <td>Cosechadora</td>
+                                    <td>Falla de cuchillas</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="dot" style="background: var(--color-orange);"></span></td>
+                                    <td>08:05</td>
+                                    <td>08:14</td>
+                                    <td>9 min</td>
+                                    <td>Transportador</td>
+                                    <td>Atasco de material</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="dot" style="background: var(--color-orange);"></span></td>
+                                    <td>07:32</td>
+                                    <td>07:45</td>
+                                    <td>13 min</td>
+                                    <td>Enfardadora</td>
+                                    <td>Ajuste de tensión</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="dot" style="background: var(--color-red);"></span></td>
+                                    <td>06:50</td>
+                                    <td>06:58</td>
+                                    <td>8 min</td>
+                                    <td>Cosechadora</td>
+                                    <td>Mantenimiento</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- OBJETIVO DEL DÍA -->
+                <section class="panel objetivo-panel">
+                    <div class="section-header">
+                        <h2>OBJETIVO DEL DÍA</h2>
+                        <a href="#" class="interactive-link">Editar</a>
+                    </div>
+                    <div class="objetivo-content">
+                        <div class="objetivo-main">
+                            <span class="objetivo-target">1,350</span>
+                            <span class="objetivo-unit">paletas</span>
+                        </div>
+                        <div class="objetivo-stats">
+                            <div class="stat">
+                                <span class="stat-label">PRODUCIDO</span>
+                                <span class="stat-value" id="objetivoProducido">0 (0%)</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">FALTAN</span>
+                                <span class="stat-value" id="objetivoFaltan">1,350 (100%)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="turno-info">Turno: 06:00 - 14:00</div>
+                </section>
+            </div>
+        </main>
+
+        <!-- BOTTOM NAV -->
+        <nav class="bottom-nav">
+            <a href="#" class="nav-item active">
+                <i data-lucide="layout-dashboard"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="#" class="nav-item">
+                <i data-lucide="activity"></i>
+                <span>Producción</span>
+            </a>
+            <a href="#" class="nav-item">
+                <i data-lucide="server"></i>
+                <span>Máquinas</span>
+            </a>
+            <a href="#" class="nav-item">
+                <i data-lucide="file-text"></i>
+                <span>Reportes</span>
+            </a>
+            <a href="#" class="nav-item">
+                <i data-lucide="settings"></i>
+                <span>Configuración</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- ALERTS MODAL/OVERLAY (Hidden by default) -->
+    <div id="alertOverlay" class="alert-overlay hidden">
+        <div class="alert-box">
+            <i data-lucide="alert-triangle" class="alert-icon"></i>
+            <h3>¡ALERTA DE PRODUCCIÓN!</h3>
+            <p>La línea ha registrado 0 sacos/minuto durante el último ciclo.</p>
+            <button id="closeAlertBtn" class="close-alert-btn">ENTENDIDO</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        // Inicializar iconos de Lucide
+        lucide.createIcons();
+    </script>
+</body>
+</html>
